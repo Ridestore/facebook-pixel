@@ -25,6 +25,10 @@ const sendEvent = async (
     },
     body: JSON.stringify(requestBody),
   })
+
+  if (payload.event_name === 'Purchase') {
+    manager.fetch('https://uptime.betterstack.com/api/v1/heartbeat/5DdL4C5KjGUGcCUEW4ka2CPq')
+  }
 }
 
 export default async function (manager: Manager, settings: ComponentSettings) {
