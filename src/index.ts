@@ -1,6 +1,7 @@
 import { ComponentSettings, Manager } from '@managed-components/types'
 import { getEcommerceRequestBody } from './ecommerce'
 import { getRequestBody } from './track'
+import { log } from './logger'
 
 const sendEvent = async (
   payload: any,
@@ -18,7 +19,7 @@ const sendEvent = async (
     }),
   }
 
-  manager.fetch(graphEndpoint, {
+  const response = await manager.fetch(graphEndpoint, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -27,8 +28,12 @@ const sendEvent = async (
   })
 
   if (payload.event_name === 'Purchase') {
-    manager.fetch('https://uptime.betterstack.com/api/v1/heartbeat/5DdL4C5KjGUGcCUEW4ka2CPq')
+    manager.fetch(
+      'https://uptime.betterstack.com/api/v1/heartbeat/5DdL4C5KjGUGcCUEW4ka2CPq'
+    )
   }
+
+  return response
 }
 
 export default async function (manager: Manager, settings: ComponentSettings) {
@@ -44,6 +49,12 @@ export default async function (manager: Manager, settings: ComponentSettings) {
 
   manager.addEventListener('ecommerce', async event => {
     const request = await getEcommerceRequestBody(event, settings)
-    sendEvent(request, manager, settings)
+    const response = await sendEvent(request, manager, settings)
+    await log(manager, {
+      request,
+      response,
+    }).catch(e => {
+      console.error('[ecommerce] Cant send logs', e)
+    })
   })
 }
